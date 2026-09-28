@@ -1,0 +1,4 @@
+aiogram
+groq
+apscheduler
+aiohttp
