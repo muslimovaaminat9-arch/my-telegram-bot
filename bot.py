@@ -6,6 +6,7 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums import ParseMode
+from aiogram.client.session.aiohttp import AiohttpSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from groq import Groq
 
@@ -15,9 +16,12 @@ GROQ_API_KEY = "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"
 CHANNEL_ID = "@aiconfe"
 ADMIN_ID = 8665906161
 MODERATION_GROUP_ID = -1004417481682
+PROXY_URL = "http://proxy.server:3128"
 # ----------------------------------------------
 
-bot = Bot(token=BOT_TOKEN)
+# Подключаем прокси PythonAnywhere для бота
+session = AiohttpSession(proxy=PROXY_URL)
+bot = Bot(token=BOT_TOKEN, session=session)
 dp = Dispatcher()
 groq_client = Groq(api_key=GROQ_API_KEY)
 scheduler = AsyncIOScheduler()
@@ -56,11 +60,11 @@ def save_post(text: str):
     conn.commit()
     conn.close()
 
-# Функция получения случайной картинки котика
+# Функция получения случайной картинки котика (через прокси)
 async def get_random_cat_url():
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get("https://api.thecatapi.com/v1/images/search") as resp:
+        async with aiohttp.ClientSession() as http_session:
+            async with http_session.get("https://api.thecatapi.com/v1/images/search", proxy=PROXY_URL) as resp:
                 if resp.status == 200:
                     data = await resp.json()
                     return data[0]["url"]
